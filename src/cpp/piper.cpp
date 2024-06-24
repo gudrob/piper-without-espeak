@@ -7,176 +7,192 @@
 #include <codecvt>
 
 #include <onnxruntime_cxx_api.h>
-#include <spdlog/spdlog.h>
 
 #include "json.hpp"
 #include "piper.hpp"
 #include "utf8.h"
-#include "wavfile.hpp"
 
 namespace piper
 {
 
-  static std::map<Phoneme, PhonemeId> DEFAULT_PHONEME_ID_MAP = {
-      {U'_', 0},
-      {U'^', 1},
-      {U'$', 2},
-      {U' ', 3},
-      {U'!', 4},
-      {U'\'', 5},
-      {U'(', 6},
-      {U')', 7},
-      {U',', 8},
-      {U'-', 9},
-      {U'.', 10},
-      {U':', 11},
-      {U';', 12},
-      {U'?', 13},
-      {U'a', 14},
-      {U'b', 15},
-      {U'c', 16},
-      {U'd', 17},
-      {U'e', 18},
-      {U'f', 19},
-      {U'h', 20},
-      {U'i', 21},
-      {U'j', 22},
-      {U'k', 23},
-      {U'l', 24},
-      {U'm', 25},
-      {U'n', 26},
-      {U'o', 27},
-      {U'p', 28},
-      {U'q', 29},
-      {U'r', 30},
-      {U's', 31},
-      {U't', 32},
-      {U'u', 33},
-      {U'v', 34},
-      {U'w', 35},
-      {U'x', 36},
-      {U'y', 37},
-      {U'z', 38},
-      {U'æ', 39},
-      {U'ç', 40},
-      {U'ð', 41},
-      {U'ø', 42},
-      {U'ħ', 43},
-      {U'ŋ', 44},
-      {U'œ', 45},
-      {U'ǀ', 46},
-      {U'ǁ', 47},
-      {U'ǂ', 48},
-      {U'ǃ', 49},
-      {U'ɐ', 50},
-      {U'ɑ', 51},
-      {U'ɒ', 52},
-      {U'ɓ', 53},
-      {U'ɔ', 54},
-      {U'ɕ', 55},
-      {U'ɖ', 56},
-      {U'ɗ', 57},
-      {U'ɘ', 58},
-      {U'ə', 59},
-      {U'ɚ', 60},
-      {U'ɛ', 61},
-      {U'ɜ', 62},
-      {U'ɞ', 63},
-      {U'ɟ', 64},
-      {U'ɠ', 65},
-      {U'ɡ', 66},
-      {U'ɢ', 67},
-      {U'ɣ', 68},
-      {U'ɤ', 69},
-      {U'ɥ', 70},
-      {U'ɦ', 71},
-      {U'ɧ', 72},
-      {U'ɨ', 73},
-      {U'ɪ', 74},
-      {U'ɫ', 75},
-      {U'ɬ', 76},
-      {U'ɭ', 77},
-      {U'ɮ', 78},
-      {U'ɯ', 79},
-      {U'ɰ', 80},
-      {U'ɱ', 81},
-      {U'ɲ', 82},
-      {U'ɳ', 83},
-      {U'ɴ', 84},
-      {U'ɵ', 85},
-      {U'ɶ', 86},
-      {U'ɸ', 87},
-      {U'ɹ', 88},
-      {U'ɺ', 89},
-      {U'ɻ', 90},
-      {U'ɽ', 91},
-      {U'ɾ', 92},
-      {U'ʀ', 93},
-      {U'ʁ', 94},
-      {U'ʂ', 95},
-      {U'ʃ', 96},
-      {U'ʄ', 97},
-      {U'ʈ', 98},
-      {U'ʉ', 99},
-      {U'ʊ', 100},
-      {U'ʋ', 101},
-      {U'ʌ', 102},
-      {U'ʍ', 103},
-      {U'ʎ', 104},
-      {U'ʏ', 105},
-      {U'ʐ', 106},
-      {U'ʑ', 107},
-      {U'ʒ', 108},
-      {U'ʔ', 109},
-      {U'ʕ', 110},
-      {U'ʘ', 111},
-      {U'ʙ', 112},
-      {U'ʛ', 113},
-      {U'ʜ', 114},
-      {U'ʝ', 115},
-      {U'ʟ', 116},
-      {U'ʡ', 117},
-      {U'ʢ', 118},
-      {U'ʲ', 119},
-      {U'ˈ', 120},
-      {U'ˌ', 121},
-      {U'ː', 122},
-      {U'ˑ', 123},
-      {U'˞', 124},
-      {U'β', 125},
-      {U'θ', 126},
-      {U'χ', 127},
-      {U'ᵻ', 128},
-      {U'ⱱ', 129},
-      {U'0', 130},
-      {U'1', 131},
-      {U'2', 132},
-      {U'3', 133},
-      {U'4', 134},
-      {U'5', 135},
-      {U'6', 136},
-      {U'7', 137},
-      {U'8', 138},
-      {U'9', 139},
-      {U'\u0327', 140},
-      {U'\u0303', 141},
-      {U'\u032a', 142},
-      {U'\u032f', 143},
-      {U'\u0329', 144},
-      {U'ʰ', 145},
-      {U'ˤ', 146},
-      {U'ε', 147},
-      {U'↓', 148},
-      {U'#', 149},
-      {U'\"', 150},
-      {U'↑', 151},
-      {U'\u033a', 152},
-      {U'\u033b', 153},
-      {U'g', 154},
-      {U'ʦ', 155},
-      {U'X', 156},
-      {U'\u031d', 157},
-      {U'\u030a', 158}};
+  std::ofstream logger("ttslog.txt");
+
+  Voice voice;
+
+  SynthesisConfig synthesisConfig;
+
+  static std::map<Phoneme, PhonemeId>
+      DEFAULT_PHONEME_ID_MAP = {
+          {U'_', 0},
+          {U'^', 1},
+          {U'$', 2},
+          {U' ', 3},
+          {U'!', 4},
+          {U'\'', 5},
+          {U'(', 6},
+          {U')', 7},
+          {U',', 8},
+          {U'-', 9},
+          {U'.', 10},
+          {U':', 11},
+          {U';', 12},
+          {U'?', 13},
+          {U'a', 14},
+          {U'b', 15},
+          {U'c', 16},
+          {U'd', 17},
+          {U'e', 18},
+          {U'f', 19},
+          {U'h', 20},
+          {U'i', 21},
+          {U'j', 22},
+          {U'k', 23},
+          {U'l', 24},
+          {U'm', 25},
+          {U'n', 26},
+          {U'o', 27},
+          {U'p', 28},
+          {U'q', 29},
+          {U'r', 30},
+          {U's', 31},
+          {U't', 32},
+          {U'u', 33},
+          {U'v', 34},
+          {U'w', 35},
+          {U'x', 36},
+          {U'y', 37},
+          {U'z', 38},
+          {U'æ', 39},
+          {U'ç', 40},
+          {U'ð', 41},
+          {U'ø', 42},
+          {U'ħ', 43},
+          {U'ŋ', 44},
+          {U'œ', 45},
+          {U'ǀ', 46},
+          {U'ǁ', 47},
+          {U'ǂ', 48},
+          {U'ǃ', 49},
+          {U'ɐ', 50},
+          {U'ɑ', 51},
+          {U'ɒ', 52},
+          {U'ɓ', 53},
+          {U'ɔ', 54},
+          {U'ɕ', 55},
+          {U'ɖ', 56},
+          {U'ɗ', 57},
+          {U'ɘ', 58},
+          {U'ə', 59},
+          {U'ɚ', 60},
+          {U'ɛ', 61},
+          {U'ɜ', 62},
+          {U'ɞ', 63},
+          {U'ɟ', 64},
+          {U'ɠ', 65},
+          {U'ɡ', 66},
+          {U'ɢ', 67},
+          {U'ɣ', 68},
+          {U'ɤ', 69},
+          {U'ɥ', 70},
+          {U'ɦ', 71},
+          {U'ɧ', 72},
+          {U'ɨ', 73},
+          {U'ɪ', 74},
+          {U'ɫ', 75},
+          {U'ɬ', 76},
+          {U'ɭ', 77},
+          {U'ɮ', 78},
+          {U'ɯ', 79},
+          {U'ɰ', 80},
+          {U'ɱ', 81},
+          {U'ɲ', 82},
+          {U'ɳ', 83},
+          {U'ɴ', 84},
+          {U'ɵ', 85},
+          {U'ɶ', 86},
+          {U'ɸ', 87},
+          {U'ɹ', 88},
+          {U'ɺ', 89},
+          {U'ɻ', 90},
+          {U'ɽ', 91},
+          {U'ɾ', 92},
+          {U'ʀ', 93},
+          {U'ʁ', 94},
+          {U'ʂ', 95},
+          {U'ʃ', 96},
+          {U'ʄ', 97},
+          {U'ʈ', 98},
+          {U'ʉ', 99},
+          {U'ʊ', 100},
+          {U'ʋ', 101},
+          {U'ʌ', 102},
+          {U'ʍ', 103},
+          {U'ʎ', 104},
+          {U'ʏ', 105},
+          {U'ʐ', 106},
+          {U'ʑ', 107},
+          {U'ʒ', 108},
+          {U'ʔ', 109},
+          {U'ʕ', 110},
+          {U'ʘ', 111},
+          {U'ʙ', 112},
+          {U'ʛ', 113},
+          {U'ʜ', 114},
+          {U'ʝ', 115},
+          {U'ʟ', 116},
+          {U'ʡ', 117},
+          {U'ʢ', 118},
+          {U'ʲ', 119},
+          {U'ˈ', 120},
+          {U'ˌ', 121},
+          {U'ː', 122},
+          {U'ˑ', 123},
+          {U'˞', 124},
+          {U'β', 125},
+          {U'θ', 126},
+          {U'χ', 127},
+          {U'ᵻ', 128},
+          {U'ⱱ', 129},
+          {U'0', 130},
+          {U'1', 131},
+          {U'2', 132},
+          {U'3', 133},
+          {U'4', 134},
+          {U'5', 135},
+          {U'6', 136},
+          {U'7', 137},
+          {U'8', 138},
+          {U'9', 139},
+          {U'\u0327', 140},
+          {U'\u0303', 141},
+          {U'\u032a', 142},
+          {U'\u032f', 143},
+          {U'\u0329', 144},
+          {U'ʰ', 145},
+          {U'ˤ', 146},
+          {U'ε', 147},
+          {U'↓', 148},
+          {U'#', 149},
+          {U'\"', 150},
+          {U'↑', 151},
+          {U'\u033a', 152},
+          {U'\u033b', 153},
+          {U'g', 154},
+          {U'ʦ', 155},
+          {U'X', 156},
+          {U'\u031d', 157},
+          {U'\u030a', 158}};
+
+  void replace(std::string &str, const std::string &from, const std::string &to)
+  {
+    do
+    {
+      size_t start_pos = str.find(from);
+      if (start_pos == std::string::npos)
+        break;
+      str.replace(start_pos, from.length(), to);
+    } while (true);
+  }
 
   static std::vector<std::string> numbers_units = {"zero", "one", "two", "three",
                                                    "four", "five", "six", "seven", "eight", "nine", "ten", "eleven",
@@ -249,132 +265,21 @@ namespace piper
     }
   }
 
-#ifdef _PIPER_VERSION
-// https://stackoverflow.com/questions/47346133/how-to-use-a-define-inside-a-format-string
-#define _STR(x) #x
-#define STR(x) _STR(x)
-  const std::string VERSION = STR(_PIPER_VERSION);
-#else
-  const std::string VERSION = "";
-#endif
-
   // Maximum value for 16-bit signed WAV sample
   const float MAX_WAV_VALUE = 32767.0f;
-
-  const std::string instanceName{"piper"};
-
-  std::string getVersion() { return VERSION; }
-
-  // True if the string is a single UTF-8 codepoint
-  bool isSingleCodepoint(std::string s)
-  {
-    return utf8::distance(s.begin(), s.end()) == 1;
-  }
-
-  // Load JSON config for audio synthesis
-  void parseSynthesisConfig(json &configRoot, SynthesisConfig &synthesisConfig)
-  {
-    // {
-    //     "audio": {
-    //         "sample_rate": 22050
-    //     },
-    //     "inference": {
-    //         "noise_scale": 0.667,
-    //         "length_scale": 1,
-    //         "noise_w": 0.8,
-    //         "phoneme_silence": {
-    //           "<phoneme>": <seconds of silence>,
-    //           ...
-    //         }
-    //     }
-    // }
-
-    if (configRoot.contains("audio"))
-    {
-      auto audioValue = configRoot["audio"];
-      if (audioValue.contains("sample_rate"))
-      {
-        // Default sample rate is 22050 Hz
-        synthesisConfig.sampleRate = audioValue.value("sample_rate", 22050);
-      }
-    }
-
-    if (configRoot.contains("inference"))
-    {
-      // Overrides default inference settings
-      auto inferenceValue = configRoot["inference"];
-      if (inferenceValue.contains("noise_scale"))
-      {
-        synthesisConfig.noiseScale = inferenceValue.value("noise_scale", 0.667f);
-      }
-
-      if (inferenceValue.contains("length_scale"))
-      {
-        synthesisConfig.lengthScale = inferenceValue.value("length_scale", 1.0f);
-      }
-
-      if (inferenceValue.contains("noise_w"))
-      {
-        synthesisConfig.noiseW = inferenceValue.value("noise_w", 0.8f);
-      }
-
-      if (inferenceValue.contains("phoneme_silence"))
-      {
-        // phoneme -> seconds of silence to add after
-        synthesisConfig.phonemeSilenceSeconds.emplace();
-        auto phonemeSilenceValue = inferenceValue["phoneme_silence"];
-        for (auto &phonemeItem : phonemeSilenceValue.items())
-        {
-          std::string phonemeStr = phonemeItem.key();
-          if (!isSingleCodepoint(phonemeStr))
-          {
-            spdlog::error("\"{}\" is not a single codepoint", phonemeStr);
-            throw std::runtime_error(
-                "Phonemes must be one codepoint (phoneme silence)");
-          }
-        }
-
-      } // if phoneme_silence
-
-    } // if inference
-
-  } /* parseSynthesisConfig */
-
-  void parseModelConfig(json &configRoot, ModelConfig &modelConfig)
-  {
-
-    modelConfig.numSpeakers = configRoot["num_speakers"].get<SpeakerId>();
-
-    if (configRoot.contains("speaker_id_map"))
-    {
-      if (!modelConfig.speakerIdMap)
-      {
-        modelConfig.speakerIdMap.emplace();
-      }
-
-      auto speakerIdMapValue = configRoot["speaker_id_map"];
-      for (auto &speakerItem : speakerIdMapValue.items())
-      {
-        std::string speakerName = speakerItem.key();
-        (*modelConfig.speakerIdMap)[speakerName] =
-            speakerItem.value().get<SpeakerId>();
-      }
-    }
-
-  } /* parseModelConfig */
 
   static std::map<std::string, std::string> IPA_MAP;
 
   inline void ltrim(std::string &s)
   {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch)
-                                    { return !std::isspace(ch); }));
+                                    { return !std::isspace(ch) && !std::iscntrl(ch); }));
   }
 
   inline void rtrim(std::string &s)
   {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch)
-                         { return !std::isspace(ch); })
+                         { return !std::isspace(ch) && !std::iscntrl(ch); })
                 .base(),
             s.end());
   }
@@ -386,10 +291,19 @@ namespace piper
     return s;
   }
 
-  void initialize(PiperConfig &config, std::string ipaDataPath)
+  void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, bool useCuda)
   {
-    spdlog::info("Initialized piper");
+    synthesisConfig.modelPath = lengthScale;
+    synthesisConfig.lengthScale = lengthScale;
+    synthesisConfig.noiseScale = noiseScale;
+    synthesisConfig.noiseW = noiseW;
+    synthesisConfig.speakerId = speakerId;
+    synthesisConfig.sentenceSilenceSeconds = sentenceSilenceSeconds;
+    synthesisConfig.useCuda = useCuda;
+  }
 
+  void LoadIPAData(std::string ipaDataPath)
+  {
     std::string line;
     std::ifstream file(ipaDataPath);
     int kvCount = 0;
@@ -415,26 +329,18 @@ namespace piper
         IPA_MAP[key] = value;
         kvCount++;
       }
-      spdlog::info("Loaded {}  key/value pairs from IPA.data", kvCount);
       file.close();
     }
     else
     {
-      spdlog::error("Could not load ipa data file from '" + ipaDataPath + "'. This file should contain only lines in the following format: WORD, IPA");
-      terminate(config);
+      throw new std::invalid_argument("Could not load ipa data file from '" + std::string(ipaDataPath) + "'. This file should contain only lines in the following format: WORD, IPA");
     }
   }
 
-  void terminate(PiperConfig &config)
+  void LoadModel(int modelDataLength, const void *modelData, ModelSession &session, bool useCuda)
   {
-    spdlog::info("Terminated piper");
-  }
 
-  void loadModel(std::string modelPath, ModelSession &session, bool useCuda)
-  {
-    spdlog::debug("Loading onnx model from {}", modelPath);
-    session.env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
-                           instanceName.c_str());
+    session.env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, std::string("TTS").c_str());
     session.env.DisableTelemetryEvents();
 
     if (useCuda)
@@ -462,61 +368,20 @@ namespace piper
     session.options.DisableMemPattern();
     session.options.DisableProfiling();
 
-    auto startTime = std::chrono::steady_clock::now();
-
-#ifdef _WIN32
-    auto modelPathW = std::wstring(modelPath.begin(), modelPath.end());
-    auto modelPathStr = modelPathW.c_str();
-#else
-    auto modelPathStr = modelPath.c_str();
-#endif
-
-    session.onnx = Ort::Session(session.env, modelPathStr, session.options);
-
-    auto endTime = std::chrono::steady_clock::now();
-    spdlog::debug("Loaded onnx model in {} second(s)",
-                  std::chrono::duration<double>(endTime - startTime).count());
+    session.onnx = Ort::Session(session.env, modelData, modelDataLength, session.options);
   }
 
   // Load Onnx model and JSON config file
-  void loadVoice(PiperConfig &config, std::string modelPath,
-                 std::string modelConfigPath, Voice &voice,
-                 std::optional<SpeakerId> &speakerId, bool useCuda)
+  void LoadVoice(int modelDataLength, const void *modelData)
   {
-    spdlog::debug("Parsing voice config at {}", modelConfigPath);
-    std::ifstream modelConfigFile(modelConfigPath);
-    voice.configRoot = json::parse(modelConfigFile);
-
-    parseSynthesisConfig(voice.configRoot, voice.synthesisConfig);
-    parseModelConfig(voice.configRoot, voice.modelConfig);
-
-    if (voice.modelConfig.numSpeakers > 1)
-    {
-      // Multi-speaker model
-      if (speakerId)
-      {
-        voice.synthesisConfig.speakerId = speakerId;
-      }
-      else
-      {
-        // Default speaker
-        voice.synthesisConfig.speakerId = 0;
-      }
-    }
-
-    spdlog::debug("Voice contains {} speaker(s)", voice.modelConfig.numSpeakers);
-
-    loadModel(modelPath, voice.session, useCuda);
-
-  } /* loadVoice */
+    LoadModel(modelDataLength, modelData, voice.session, synthesisConfig.useCuda);
+  }
 
   // Phoneme ids to WAV audio
   void synthesize(std::vector<PhonemeId> &phonemeIds,
                   SynthesisConfig &synthesisConfig, ModelSession &session,
-                  std::vector<int16_t> &audioBuffer, SynthesisResult &result)
+                  std::vector<int16_t> &audioBuffer)
   {
-    spdlog::debug("Synthesizing audio for {} phoneme id(s)", phonemeIds.size());
-
     auto memoryInfo = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
 
@@ -544,16 +409,12 @@ namespace piper
 
     // Add speaker id.
     // NOTE: These must be kept outside the "if" below to avoid being deallocated.
-    std::vector<int64_t> speakerId{
-        (int64_t)synthesisConfig.speakerId.value_or(0)};
+    std::vector<int64_t> speakerId{synthesisConfig.speakerId};
     std::vector<int64_t> speakerIdShape{(int64_t)speakerId.size()};
 
-    if (synthesisConfig.speakerId)
-    {
-      inputTensors.push_back(Ort::Value::CreateTensor<int64_t>(
-          memoryInfo, speakerId.data(), speakerId.size(), speakerIdShape.data(),
-          speakerIdShape.size()));
-    }
+    inputTensors.push_back(Ort::Value::CreateTensor<int64_t>(
+        memoryInfo, speakerId.data(), speakerId.size(), speakerIdShape.data(),
+        speakerIdShape.size()));
 
     // From export_onnx.py
     std::array<const char *, 4> inputNames = {"input", "input_lengths", "scales",
@@ -571,22 +432,11 @@ namespace piper
     {
       throw std::runtime_error("Invalid output tensors");
     }
-    auto inferDuration = std::chrono::duration<double>(endTime - startTime);
-    result.inferSeconds = inferDuration.count();
 
     const float *audio = outputTensors.front().GetTensorData<float>();
     auto audioShape =
         outputTensors.front().GetTensorTypeAndShapeInfo().GetShape();
     int64_t audioCount = audioShape[audioShape.size() - 1];
-
-    result.audioSeconds = (double)audioCount / (double)synthesisConfig.sampleRate;
-    result.realTimeFactor = 0.0;
-    if (result.audioSeconds > 0)
-    {
-      result.realTimeFactor = result.inferSeconds / result.audioSeconds;
-    }
-    spdlog::debug("Synthesized {} second(s) of audio in {} second(s)",
-                  result.audioSeconds, result.inferSeconds);
 
     // Get max audio value for scaling
     float maxAudioValue = 0.01f;
@@ -640,10 +490,10 @@ namespace piper
 
   bool is_sentence_ending(char c)
   {
-    return (c == '.' || c == '!' || c == '?' || c == ';' || c == ':' | c == ',');
+    return (c == '.' || c == '!' || c == '?' || c == ';' || c == ':' || c == ',' || c == '\n');
   }
 
-  std::vector<std::string> split_into_sentences(const std::string &text)
+  std::vector<std::string> split_into_sentences(const std::string &text, std::vector<bool> &long_pauses)
   {
     std::vector<std::string> sentences;
     size_t start = 0;
@@ -661,6 +511,15 @@ namespace piper
           decimal_dot = end;
         }
         end++;
+      }
+
+      if (text[end] == ';' || text[end] == ',')
+      {
+        long_pauses.push_back(false);
+      }
+      else
+      {
+        long_pauses.push_back(true);
       }
 
       // Extract the sentence
@@ -720,7 +579,7 @@ namespace piper
     return convert.from_bytes(utf8str);
   }
 
-  std::string acceptable_chars = "\'-./+=&%$§*#";
+  std::string acceptable_chars = "\'-.*";
 
   std::string remove_all_unwanted_chars(std::string &str)
   {
@@ -733,6 +592,56 @@ namespace piper
       if (isalnum(c) || acceptable_chars.find(c) != std::string::npos)
       {
         ss << c;
+      }
+      else
+      {
+        switch (c)
+        {
+        case '+':
+          ss << " plus ";
+          break;
+        case '=':
+          ss << " equals ";
+          break;
+        case '$':
+          ss << " dollar ";
+          break;
+          /* case '€':
+             ss << " euro ";
+             break;*/
+        case '@':
+          ss << " at ";
+          break;
+        /*case '¢':
+          ss << " cent ";
+          break;*/
+        /*case '£':
+          ss << " pound ";
+          break;*/
+        /*case '¥':
+          ss << " yen ";
+          break;*/
+        case '&':
+          ss << " and ";
+          break;
+        /*case '§':
+          ss << " paragraph ";
+          break;*/
+        case '#':
+          ss << " number ";
+          break;
+        case '%':
+          ss << " percent ";
+          break;
+        case '/':
+          ss << " slash ";
+          break;
+        case '\\':
+          ss << " backslash ";
+          break;
+        default:
+          break;
+        }
       }
     }
 
@@ -771,17 +680,23 @@ namespace piper
     }
     catch (const std::invalid_argument &)
     {
-      std::cerr << "Could not convert number, because argument is invalid: " << rep << std::endl;
+      logger << "Could not convert number, because argument is invalid: " << rep << std::endl;
     }
     catch (const std::out_of_range &)
     {
-      std::cerr << "Could not convert number, because argument is out of range for a double" << rep << std::endl;
+      logger << "Could not convert number, because argument is out of range for a double: " << rep << std::endl;
     }
   }
 
-  void phonemize_text(std::string &str, std::vector<std::vector<Phoneme>> &phonemes)
+  void phonemize_text(std::string &str, std::vector<std::vector<Phoneme>> &phonemes, std::vector<bool> &long_pauses)
   {
-    auto sentences = split_into_sentences(str);
+    replace(str, "€", " euro ");
+    replace(str, "¢", " cent ");
+    replace(str, "£", " pound ");
+    replace(str, "¥", " yen ");
+    replace(str, "$", " paragraph ");
+
+    auto sentences = split_into_sentences(str, long_pauses);
     for (auto sentence : sentences)
     {
       auto words = split(sentence, ' ');
@@ -831,9 +746,6 @@ namespace piper
           remove_chars_from_string(rep, ",");
         }
 
-        std::cout << "WRD " << word << std::endl;
-        std::cout << " TYP " << (int)is_all_uppercase << (int)is_a_number << (int)is_estimation << std::endl;
-
         if (is_estimation)
         {
           auto numbers = split(rep, '-');
@@ -874,8 +786,6 @@ namespace piper
         }
         else
         {
-          std::cout << "[" << rep << "] = ";
-
           int pos = 0;
           int length = rep.length();
           int remaining = rep.length();
@@ -907,7 +817,7 @@ namespace piper
               length--;
             }
           }
-
+          logger << "Unknown word: " << rep << " - " << repcopy.str() << std::endl;
           rep = repcopy.str();
         }
 
@@ -915,8 +825,6 @@ namespace piper
         {
           continue;
         }
-
-        std::cout << "IPA " << rep << std::endl;
 
         auto convertedString = utf8_to_utf32(rep);
         auto length = convertedString.length();
@@ -936,38 +844,16 @@ namespace piper
     }
   }
 
-  // ----------------------------------------------------------------------------
+  Phoneme pad = U'_';
+  Phoneme bos = U'^';
+  Phoneme eos = U'$';
 
-  // Phonemize text and synthesize audio
+  auto bosId = DEFAULT_PHONEME_ID_MAP.at(bos);
+  auto padId = DEFAULT_PHONEME_ID_MAP.at(pad);
+  auto eosId = DEFAULT_PHONEME_ID_MAP.at(eos);
 
-  /*void phonemes_to_ids(std::vector<piper::Phoneme> &sentence, std::vector<PhonemeId> &phonemeIds, std::vector<piper::Phoneme> &missing)
+  void phonemes_to_ids(std::vector<Phoneme> &phonemes, std::vector<PhonemeId> &phonemeIds)
   {
-    for (auto phon : sentence)
-    {
-      if (DEFAULT_PHONEME_ID_MAP.count(phon) == 1)
-      {
-        phonemeIds.push_back(DEFAULT_PHONEME_ID_MAP[phon]);
-        std::cout << "PUSHING" << std::endl;
-      }
-      else
-      {
-        missing.push_back(phon);
-        std::cout << "MISSING" << std::endl;
-      }
-    }
-  }*/
-
-  void phonemes_to_ids(std::vector<Phoneme> &phonemes, std::vector<PhonemeId> &phonemeIds,
-                       std::vector<Phoneme> &missingPhonemes)
-  {
-    Phoneme pad = U'_';
-    Phoneme bos = U'^';
-    Phoneme eos = U'$';
-
-    auto bosId = DEFAULT_PHONEME_ID_MAP.at(bos);
-    auto padId = DEFAULT_PHONEME_ID_MAP.at(pad);
-    auto eosId = DEFAULT_PHONEME_ID_MAP.at(eos);
-
     // Beginning of sentence symbol (^)
     phonemeIds.push_back(bosId);
 
@@ -978,7 +864,6 @@ namespace piper
     {
       if (DEFAULT_PHONEME_ID_MAP.count(phoneme) < 1)
       {
-        missingPhonemes.push_back(phoneme);
         continue;
       }
 
@@ -993,96 +878,77 @@ namespace piper
     phonemeIds.push_back(eosId);
   }
 
-  void textToAudio(PiperConfig &config, Voice &voice, std::string text,
-                   std::vector<int16_t> &audioBuffer, SynthesisResult &result,
-                   const std::function<void()> &audioCallback)
-  {
-    // Phonemes for each sentence
-    spdlog::debug("Phonemizing text: {}", text);
-    std::vector<std::vector<Phoneme>> phonemes;
+  std::vector<int16_t> silence_buffer = {1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0, -1, -1, -2, -2, -3, -3, -4, -4, -3, -3, -2, -2, -1, -1, 0, 0};
 
-    phonemize_text(text, phonemes);
+  int silence_buffer_length = silence_buffer.size();
+
+  void TextToAudio(std::string text,
+                   std::vector<int16_t> &audioBuffer)
+  {
+    auto sentenceSilenceSamples = (std::size_t)(
+        synthesisConfig.sentenceSilenceSeconds *
+        synthesisConfig.sampleRate * synthesisConfig.channels);
+
+    auto sentenceSilenceSamplesHalf = sentenceSilenceSamples / 2;
+
+    for (std::size_t i = 0; i < sentenceSilenceSamplesHalf; i++)
+    {
+      audioBuffer.push_back(silence_buffer[i % silence_buffer_length]);
+    }
+
+    // Phonemes for each sentence
+    std::vector<std::vector<Phoneme>> phonemes;
+    std::vector<bool> long_pauses;
+
+    phonemize_text(text, phonemes, long_pauses);
 
     // Synthesize each sentence independently.
     std::vector<PhonemeId> phonemeIds;
-    std::vector<Phoneme> missingPhonemes;
-    for (auto sentence : phonemes)
+    auto phonemes_size = phonemes.size();
+    for (auto sentenceIndex = 0; sentenceIndex < phonemes_size; sentenceIndex++)
     {
-      SynthesisResult synthresult;
 
+      auto sentence = phonemes[sentenceIndex];
       // phonemes -> ids
-      phonemes_to_ids(sentence, phonemeIds, missingPhonemes);
+      phonemes_to_ids(sentence, phonemeIds);
 
       // ids -> audio
-      synthesize(phonemeIds, voice.synthesisConfig, voice.session, audioBuffer,
-                 synthresult);
+      synthesize(phonemeIds, synthesisConfig, voice.session, audioBuffer);
 
-      auto sentenceSilenceSamples = (std::size_t)(
-          voice.synthesisConfig.sentenceSilenceSeconds *
-          voice.synthesisConfig.sampleRate * voice.synthesisConfig.channels);
-
-      for (std::size_t i = 0; i < sentenceSilenceSamples; i++)
+      // end of generation is also a short pause
+      if (sentenceIndex < phonemes_size - 1 && long_pauses[sentenceIndex])
       {
-        audioBuffer.push_back(0);
+        for (std::size_t i = 0; i < sentenceSilenceSamples; i++)
+        {
+          audioBuffer.push_back(silence_buffer[i % silence_buffer_length]);
+        }
       }
-
-      result.audioSeconds += synthresult.audioSeconds;
-      result.inferSeconds += synthresult.inferSeconds;
-
-      if (audioCallback)
+      else
       {
-        // Call back must copy audio since it is cleared afterwards.
-        audioCallback();
-        audioBuffer.clear();
+        for (std::size_t i = 0; i < sentenceSilenceSamplesHalf; i++)
+        {
+          audioBuffer.push_back(silence_buffer[i % silence_buffer_length]);
+        }
       }
 
       phonemeIds.clear();
     }
-
-    std::cout << std::endl;
-
-    if (missingPhonemes.size() > 0)
-    {
-      std::stringstream ss;
-
-      for (auto phon : missingPhonemes)
-      {
-        ss << (char)phon;
-      }
-
-      spdlog::warn("Missing {} phoneme(s) from phoneme/id map! {}",
-                   missingPhonemes.size(), ss.str());
-    }
-
-    if (result.audioSeconds > 0)
-    {
-      result.realTimeFactor = result.inferSeconds / result.audioSeconds;
-    }
-
   } /* textToAudio */
 
   // Phonemize text and synthesize audio to WAV file
-  char *textToVoice(PiperConfig &config, Voice &voice, std::string text, SynthesisResult &result, uint32_t &dataSize)
+  char *TextToVoice(std::string text, uint32_t &dataSize)
   {
-
     std::vector<int16_t> audioBuffer;
-    textToAudio(config, voice, text, audioBuffer, result, NULL);
 
-    // Write WAV
-    auto synthesisConfig = voice.synthesisConfig;
+    TextToAudio(text, audioBuffer);
 
-    auto audioHeaderData = getWavHeader(synthesisConfig.sampleRate, synthesisConfig.sampleWidth, synthesisConfig.channels, (int32_t)audioBuffer.size());
-    auto audioHeaderSize = sizeof(audioHeaderData);
-    auto audioBufferData = (const char *)audioBuffer.data();
-    auto audioBufferSize = audioBuffer.size() * 2;
-    dataSize = audioBufferSize + audioHeaderSize;
+    dataSize = audioBuffer.size() * 2;
 
     char *full_data;
-    full_data = (char *)malloc(dataSize);                                                 /* make space for the new string (should check the return value ...) */
-    memcpy(full_data, reinterpret_cast<const char *>(&audioHeaderData), audioHeaderSize); /* copy name into the new var */
-    memcpy(full_data + audioHeaderSize, audioBufferData, audioBufferSize);                /* add the extension */
+    full_data = (char *)malloc(dataSize);                          /* copy name into the new var */
+    memcpy(full_data, (const char *)audioBuffer.data(), dataSize); /* add the extension */
 
     return full_data;
-  } /* textToWavFile */
+  }
 
 } // namespace piper

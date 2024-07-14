@@ -40,6 +40,7 @@
 
 #include "json.hpp"
 #include "piper.hpp"
+#include "wavfile.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -97,6 +98,8 @@ LIB_API char *GenerateVoiceData(int *length, const char *text)
 
     // Output audio to automatically-named WAV file in a directory
     ofstream audioFile(outputName.str(), ios::binary);
+    auto header = createWavHeader(22050, 16, 1, dataSize / 2);
+    audioFile.write(reinterpret_cast<const char *>(&header), sizeof(header));
     audioFile.write(data, dataSize);
     audioFile.close();
   }

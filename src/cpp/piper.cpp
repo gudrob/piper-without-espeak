@@ -291,7 +291,7 @@ namespace piper
     return s;
   }
 
-  void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, bool useCuda)
+  void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTime, bool useCuda)
   {
     synthesisConfig.modelPath = lengthScale;
     synthesisConfig.lengthScale = lengthScale;
@@ -299,6 +299,7 @@ namespace piper
     synthesisConfig.noiseW = noiseW;
     synthesisConfig.speakerId = speakerId;
     synthesisConfig.sentenceSilenceSeconds = sentenceSilenceSeconds;
+    synthesisConfig.fadeTime = fadeTime;
     synthesisConfig.useCuda = useCuda;
   }
 
@@ -878,10 +879,6 @@ namespace piper
     phonemeIds.push_back(eosId);
   }
 
-  std::vector<int16_t> silence_buffer = {1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 2, 2, 1, 1, 0, 0, -1, -1, -2, -2, -3, -3, -4, -4, -3, -3, -2, -2, -1, -1, 0, 0};
-
-  int silence_buffer_length = silence_buffer.size();
-
   void TextToAudio(std::string text,
                    std::vector<int16_t> &audioBuffer)
   {
@@ -891,9 +888,11 @@ namespace piper
 
     auto sentenceSilenceSamplesHalf = sentenceSilenceSamples / 2;
 
+    auto fadeTime = synthesisConfig.fadeTime * synthesisConfig.sampleRate * synthesisConfig.channels;
+
     for (std::size_t i = 0; i < sentenceSilenceSamplesHalf; i++)
     {
-      audioBuffer.push_back(silence_buffer[i % silence_buffer_length]);
+      audioBuffer.push_back(0);
     }
 
     // Phonemes for each sentence
@@ -912,22 +911,39 @@ namespace piper
       // phonemes -> ids
       phonemes_to_ids(sentence, phonemeIds);
 
+      std::vector<int16_t> audioSubBuffer;
+
       // ids -> audio
-      synthesize(phonemeIds, synthesisConfig, voice.session, audioBuffer);
+      synthesize(phonemeIds, synthesisConfig, voice.session, audioSubBuffer);
+
+      auto subBufferLength = audioSubBuffer.size() - 1;
+
+      for (std::size_t i = 0; i < fadeTime; i++)
+      {
+        auto fade = i / fadeTime;
+        fade = fade * fade * fade * fade;
+        audioSubBuffer[i] = audioSubBuffer[i] * fade;
+        audioSubBuffer[subBufferLength - i] = audioSubBuffer[subBufferLength - i] * fade;
+      }
+
+      for (std::size_t i = 0; i <= subBufferLength; i++)
+      {
+        audioBuffer.push_back(audioSubBuffer[i]);
+      }
 
       // end of generation is also a short pause
       if (sentenceIndex < phonemes_size - 1 && long_pauses[sentenceIndex])
       {
         for (std::size_t i = 0; i < sentenceSilenceSamples; i++)
         {
-          audioBuffer.push_back(silence_buffer[i % silence_buffer_length]);
+          audioBuffer.push_back(0);
         }
       }
       else
       {
         for (std::size_t i = 0; i < sentenceSilenceSamplesHalf; i++)
         {
-          audioBuffer.push_back(silence_buffer[i % silence_buffer_length]);
+          audioBuffer.push_back(0);
         }
       }
 

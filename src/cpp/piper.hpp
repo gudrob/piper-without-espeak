@@ -30,6 +30,7 @@ namespace piper
     float noiseScale = 0.667f;
     float lengthScale = 1.0f;
     float noiseW = 0.8f;
+    float fadeTime = 0.1f;
 
     bool useCuda = false;
 
@@ -64,7 +65,7 @@ namespace piper
   // Must be called before using textTo* functions
   void LoadIPAData(std::string ipaPath);
 
-  void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, bool useCuda);
+  void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTime, bool useCuda);
 
   // Load Onnx model and JSON config file
   void LoadVoice(int modelDataLength, const void *modelData);

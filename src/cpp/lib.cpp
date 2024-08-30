@@ -8,9 +8,11 @@
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <thread>
 #include <vector>
+#include <string>
+#include <codecvt>
+#include <locale>
 
 #if defined(_MSC_VER)
 #define LIB_API __declspec(dllexport) // Microsoft
@@ -38,12 +40,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "json.hpp"
 #include "piper.hpp"
 #include "wavfile.hpp"
 
 using namespace std;
-using json = nlohmann::json;
 
 bool writeFile = false;
 std::string outputPath = "./output/";
@@ -76,6 +76,18 @@ LIB_API void SetOutputDirectory(const char *outputDirectory)
 {
   std::string str(outputDirectory);
   outputPath = str;
+}
+
+LIB_API char *GetLastIPA(int *length)
+{
+  auto str = piper::GetLastIPA();
+
+  *length = str.size();
+
+  char *full_data = (char *)malloc(*length);
+  memcpy(full_data, (const char *)str.data(), *length);
+
+  return full_data;
 }
 
 LIB_API char *GenerateVoiceData(int *length, const char *text)

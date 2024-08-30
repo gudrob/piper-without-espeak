@@ -8,12 +8,12 @@
 
 #include <onnxruntime_cxx_api.h>
 
-#include "json.hpp"
 #include "piper.hpp"
 #include "utf8.h"
 
 namespace piper
 {
+  std::stringstream lastIPA;
 
   std::ofstream logger("ttslog.txt");
 
@@ -248,6 +248,11 @@ namespace piper
     return convert_number_to_text(i / 1'000'000'000'000) + " trillion" + ((i % 1'000'000'000'000 > 0) ? " " + convert_number_to_text(i % 1'000'000'000'000) : "");
   }
 
+  std::string GetLastIPA()
+  {
+    return lastIPA.str();
+  }
+
   std::string number_to_text(double number)
   {
     int64_t number_int = (int64_t)number;
@@ -293,7 +298,6 @@ namespace piper
 
   void ApplySynthesisConfig(float lengthScale, float noiseScale, float noiseW, int speakerId, float sentenceSilenceSeconds, float fadeTime, bool useCuda)
   {
-    synthesisConfig.modelPath = lengthScale;
     synthesisConfig.lengthScale = lengthScale;
     synthesisConfig.noiseScale = noiseScale;
     synthesisConfig.noiseW = noiseW;
@@ -372,7 +376,6 @@ namespace piper
     session.onnx = Ort::Session(session.env, modelData, modelDataLength, session.options);
   }
 
-  // Load Onnx model and JSON config file
   void LoadVoice(int modelDataLength, const void *modelData)
   {
     LoadModel(modelDataLength, modelData, voice.session, synthesisConfig.useCuda);
@@ -594,56 +597,6 @@ namespace piper
       {
         ss << c;
       }
-      else
-      {
-        switch (c)
-        {
-        case '+':
-          ss << " plus ";
-          break;
-        case '=':
-          ss << " equals ";
-          break;
-        case '$':
-          ss << " dollar ";
-          break;
-          /* case '€':
-             ss << " euro ";
-             break;*/
-        case '@':
-          ss << " at ";
-          break;
-        /*case '¢':
-          ss << " cent ";
-          break;*/
-        /*case '£':
-          ss << " pound ";
-          break;*/
-        /*case '¥':
-          ss << " yen ";
-          break;*/
-        case '&':
-          ss << " and ";
-          break;
-        /*case '§':
-          ss << " paragraph ";
-          break;*/
-        case '#':
-          ss << " number ";
-          break;
-        case '%':
-          ss << " percent ";
-          break;
-        case '/':
-          ss << " slash ";
-          break;
-        case '\\':
-          ss << " backslash ";
-          break;
-        default:
-          break;
-        }
-      }
     }
 
     return ss.str();
@@ -691,11 +644,21 @@ namespace piper
 
   void phonemize_text(std::string &str, std::vector<std::vector<Phoneme>> &phonemes, std::vector<bool> &long_pauses)
   {
+
+    lastIPA.clear();
+
     replace(str, "€", " euro ");
     replace(str, "¢", " cent ");
     replace(str, "£", " pound ");
+    replace(str, "=", " equals ");
     replace(str, "¥", " yen ");
-    replace(str, "$", " paragraph ");
+    replace(str, "$", " dollar ");
+    replace(str, "§", " paragraph ");
+    replace(str, "#", " number ");
+    replace(str, "%", " percent ");
+    replace(str, "&", " and ");
+    replace(str, "+", " plus ");
+    replace(str, "@", " at ");
 
     auto sentences = split_into_sentences(str, long_pauses);
     for (auto sentence : sentences)
@@ -826,6 +789,8 @@ namespace piper
         {
           continue;
         }
+
+        lastIPA << rep << ' ';
 
         auto convertedString = utf8_to_utf32(rep);
         auto length = convertedString.length();

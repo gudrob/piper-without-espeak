@@ -10,10 +10,6 @@
 
 #include <onnxruntime_cxx_api.h>
 
-#include "json.hpp"
-
-using json = nlohmann::json;
-
 namespace piper
 {
   typedef char32_t Phoneme;
@@ -54,13 +50,15 @@ namespace piper
     Ort::SessionOptions options;
     Ort::Env env;
 
-    ModelSession() : onnx(nullptr){};
+    ModelSession() : onnx(nullptr) {};
   };
 
   struct Voice
   {
     ModelSession session;
   };
+
+  std::string GetLastIPA();
 
   // Must be called before using textTo* functions
   void LoadIPAData(std::string ipaPath);

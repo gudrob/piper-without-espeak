@@ -364,7 +364,7 @@ namespace piper
     //     GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     session.options.SetGraphOptimizationLevel(
-        GraphOptimizationLevel::ORT_DISABLE_ALL);
+        GraphOptimizationLevel::ORT_ENABLE_ALL);
 
     // Slows down performance very slightly
     // session.options.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
@@ -494,7 +494,7 @@ namespace piper
 
   bool is_sentence_ending(char c)
   {
-    return (c == '.' || c == '!' || c == '?' || c == ';' || c == ':' || c == ',' || c == '\n');
+    return (c == '.' || c == '!' || c == '?' || c == ';' || c == ':' || c == ',');
   }
 
   std::vector<std::string> split_into_sentences(const std::string &text, std::vector<bool> &long_pauses)
@@ -851,11 +851,11 @@ namespace piper
         synthesisConfig.sentenceSilenceSeconds *
         synthesisConfig.sampleRate * synthesisConfig.channels);
 
-    auto sentenceSilenceSamplesHalf = sentenceSilenceSamples / 2;
+    auto sentenceSilenceSamplesThird = sentenceSilenceSamples / 3;
 
     auto fadeTime = synthesisConfig.fadeTime * synthesisConfig.sampleRate * synthesisConfig.channels;
 
-    for (std::size_t i = 0; i < sentenceSilenceSamplesHalf; i++)
+    for (std::size_t i = 0; i < sentenceSilenceSamplesThird; i++)
     {
       audioBuffer.push_back(0);
     }
@@ -906,7 +906,7 @@ namespace piper
       }
       else
       {
-        for (std::size_t i = 0; i < sentenceSilenceSamplesHalf; i++)
+        for (std::size_t i = 0; i < sentenceSilenceSamplesThird; i++)
         {
           audioBuffer.push_back(0);
         }

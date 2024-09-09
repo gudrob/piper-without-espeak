@@ -14,8 +14,8 @@
 #include <codecvt>
 #include <locale>
 
-#if defined(_MSC_VER)
-#define LIB_API __declspec(dllexport) // Microsoft
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define LIB_API extern "C" __declspec(dllexport) // Microsoft
 #elif defined(__GNUC__)
 #define LIB_API extern "C" __attribute__((visibility("default"))) // GCC
 #else

@@ -583,7 +583,7 @@ namespace piper
     return convert.from_bytes(utf8str);
   }
 
-  std::string acceptable_chars = "\'-.*";
+  std::string acceptable_chars = "\'-._^";
 
   std::string remove_all_unwanted_chars(std::string &str)
   {
@@ -659,6 +659,8 @@ namespace piper
     replace(str, "&", " and ");
     replace(str, "+", " plus ");
     replace(str, "@", " at ");
+    replace(str, "*", " times ");
+    replace(str, "**", " ");
 
     auto sentences = split_into_sentences(str, long_pauses);
     for (auto sentence : sentences)

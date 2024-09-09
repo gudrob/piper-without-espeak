@@ -1,0 +1,17 @@
+# Define the target system
+SET(CMAKE_SYSTEM_NAME Windows)
+
+# Specify the cross-compilation toolchain
+SET(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
+SET(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
+SET(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
+
+# Specify the target architecture
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
+
+# Adjust paths to find the correct libraries and headers
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)

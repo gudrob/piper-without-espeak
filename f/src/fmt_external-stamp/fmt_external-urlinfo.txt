@@ -1,0 +1,12 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=url
+command=/opt/homebrew/Cellar/cmake/3.29.2/bin/cmake;-P;/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/download-fmt_external.cmake;COMMAND;/opt/homebrew/Cellar/cmake/3.29.2/bin/cmake;-P;/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/verify-fmt_external.cmake;COMMAND;/opt/homebrew/Cellar/cmake/3.29.2/bin/cmake;-P;/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/extract-fmt_external.cmake
+source_dir=/Users/robertgudat/cpp/pwe/f/src/fmt_external
+work_dir=/Users/robertgudat/cpp/pwe/f/src
+url(s)=https://github.com/fmtlib/fmt/archive/refs/tags/10.0.0.zip
+hash=
+no_extract=
+

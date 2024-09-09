@@ -1,0 +1,3 @@
+/opt/homebrew/Cellar/cmake/3.29.2/bin/cmake -E rm -f CMakeFiles/piper_lib.dir/objects.a
+/opt/homebrew/bin/x86_64-w64-mingw32-ar qc CMakeFiles/piper_lib.dir/objects.a @CMakeFiles/piper_lib.dir/objects1.rsp
+/opt/homebrew/bin/x86_64-w64-mingw32-g++  -m64 -Wall -Wextra -Wl,-rpath,'$ORIGIN' -Wall -Wextra -Wl,-rpath,'$ORIGIN' -shared -o libpiper_lib.dll -Wl,--out-implib,libpiper_lib.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -Wl,--whole-archive CMakeFiles/piper_lib.dir/objects.a -Wl,--no-whole-archive @CMakeFiles/piper_lib.dir/linkLibs.rsp

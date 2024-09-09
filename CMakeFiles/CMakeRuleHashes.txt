@@ -1,0 +1,19 @@
+# Hashes of file build rules.
+806b71b23edb0999e4bb104b15e7b589 CMakeFiles/fmt_external
+cd4618f91e6ef178e33c0108f26034ea CMakeFiles/fmt_external-complete
+806b71b23edb0999e4bb104b15e7b589 CMakeFiles/spdlog_external
+91f81494880f117d7b059c5d703c4df1 CMakeFiles/spdlog_external-complete
+e6aba85422b9078eecb1bc7acf4d3985 f/src/fmt_external-stamp/fmt_external-build
+11aafdd31aeb5ccf5a236da56662f19f f/src/fmt_external-stamp/fmt_external-configure
+99fa675079f65184a63cd5e045f08b36 f/src/fmt_external-stamp/fmt_external-download
+fbc7969a840ed7e7b26ef10fc1e742c1 f/src/fmt_external-stamp/fmt_external-install
+70faa57ca46e000558ab91c63c7a4957 f/src/fmt_external-stamp/fmt_external-mkdir
+116725a2964bbf000e2f71cc8ed9c213 f/src/fmt_external-stamp/fmt_external-patch
+a659a6c97db7855ac8ac7831777193ee f/src/fmt_external-stamp/fmt_external-update
+7ff18b149e1b65801b73406bb41b61bd s/src/spdlog_external-stamp/spdlog_external-build
+47774594a2370317d0234fb3af1f4ebe s/src/spdlog_external-stamp/spdlog_external-configure
+90781b7d3b18ee8fe2394d12e551f1ce s/src/spdlog_external-stamp/spdlog_external-download
+caa076fe9f1c32b64b08a49cd84b9b5b s/src/spdlog_external-stamp/spdlog_external-install
+afa9770702eec8eaf5f0599535887ae5 s/src/spdlog_external-stamp/spdlog_external-mkdir
+f4c7f2d74a4b1788cfdeb3fdf2dc32c2 s/src/spdlog_external-stamp/spdlog_external-patch
+4fb8f43680d5f6479a7eca202225b0cb s/src/spdlog_external-stamp/spdlog_external-update

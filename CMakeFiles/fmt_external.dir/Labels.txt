@@ -1,0 +1,13 @@
+# Target labels
+ fmt_external
+# Source files and their labels
+/Users/robertgudat/cpp/pwe/CMakeFiles/fmt_external
+/Users/robertgudat/cpp/pwe/CMakeFiles/fmt_external.rule
+/Users/robertgudat/cpp/pwe/CMakeFiles/fmt_external-complete.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-build.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-configure.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-download.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-install.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-mkdir.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-patch.rule
+/Users/robertgudat/cpp/pwe/f/src/fmt_external-stamp/fmt_external-update.rule

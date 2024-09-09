@@ -1,0 +1,13 @@
+# Target labels
+ spdlog_external
+# Source files and their labels
+/Users/robertgudat/cpp/pwe/CMakeFiles/spdlog_external
+/Users/robertgudat/cpp/pwe/CMakeFiles/spdlog_external.rule
+/Users/robertgudat/cpp/pwe/CMakeFiles/spdlog_external-complete.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-build.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-configure.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-download.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-install.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-mkdir.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-patch.rule
+/Users/robertgudat/cpp/pwe/s/src/spdlog_external-stamp/spdlog_external-update.rule
